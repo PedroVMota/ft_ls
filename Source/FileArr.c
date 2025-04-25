@@ -10,11 +10,12 @@ FileArr *last_pos(FileArr *cur){
     return cur;
 }
 
-FileArr *new_file(char *root, int recursive){
-    File *file = Load(root, recursive);
+FileArr *new_file(char *root, int recursive, int include_hidden){
+    
+    File *file = Load(root, recursive, include_hidden);
     if(!file)
         return NULL;
-    FileArr *node = malloc(sizeof(FileArr *));
+    FileArr *node = malloc(sizeof(FileArr));
     if(!node){
         return NULL;
     }
@@ -24,7 +25,7 @@ FileArr *new_file(char *root, int recursive){
     return node;
 }
 FileArr *add_file(FileArr **arr, FileArr *node){
-    if(!arr || *arr)
+    if(!arr || !(*arr))
         return node;
     FileArr *last = last_pos(*arr);
     if(!last){
@@ -33,7 +34,7 @@ FileArr *add_file(FileArr **arr, FileArr *node){
     }
     last->next = node;
     node->prev = last->next;
-    return node;
+    return *arr;
 }
 
 size_t lst_size(FileArr *cur){
@@ -44,3 +45,21 @@ size_t lst_size(FileArr *cur){
     }
     return len;
 }
+
+
+void free_file(File *file) {
+    if (!file) return;
+    File *child = file->childs;
+    while (child) {
+        File *next = child->next;
+        free_file(child);
+        child = next;
+    }
+    free(file->folderName);
+    file->folderName = NULL;
+    file->childs = NULL;
+    file->next = NULL;
+    file->prev = NULL;
+    free(file);
+}
+

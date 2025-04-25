@@ -1,7 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-
+#define _GNU_SOURCE
 #include <unistd.h>     // write, read, readlink, close
 #include <dirent.h>     // readdir, closedir
 #include <sys/stat.h>   // stat, lstat
@@ -14,6 +14,9 @@
 #include <string.h>     // strerror
 #include <errno.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include "../Lib/libft/libft.h"
+
 //write -> Writes into an fd
 //read -> Reads from an fd
 //readdir -> Reads a directory
@@ -37,6 +40,8 @@
     * Project fundamental make a ls with -l (long format) -R (recursive) -a (all) -r (reverse) and -t (sort by time)
 */
 
+#define print(x) write(1, x, ft_strlen(x));
+
 typedef struct dirent Dirent;
 
 
@@ -44,6 +49,7 @@ typedef struct FileMetadata FileMetadata;
 
 struct File{
     char *folderName;
+    char *name;
     struct stat data;
     bool isdir;
 
@@ -56,8 +62,12 @@ struct File{
 
 typedef struct File File;
 
-File *Load(char *, bool);
+
+File *Load(char *, bool, int);
 void sortFilesByMTime(File *head);
 
+void free_file(File *file);
 
+
+    
 #endif

@@ -1,3 +1,5 @@
 ft_ls
 Object
 .vscode
+
+*.log

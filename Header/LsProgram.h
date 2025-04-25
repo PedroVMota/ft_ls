@@ -3,7 +3,7 @@
 
 
 #include <stdint.h>
-#include "./StringUtils.h"
+#include "../Lib/libft/libft.h"
 #include "./File.h"
 
     #ifndef LS_FLAGS_EXECUTION_H
@@ -38,7 +38,7 @@ struct FileArr{
 typedef struct FileArr FileArr;
 
 /******** FileArr FUNCTIONS ********/
-FileArr *new_file(char *, int);
+FileArr *new_file(char *, int, int);
 FileArr *add_file(FileArr **, FileArr *);
 FileArr *last_pos(FileArr *);
 size_t lst_size(FileArr *);
@@ -61,6 +61,8 @@ typedef struct s_lsprogram{
 LsProgram *ls_init(int ac, char **av);
 void ls_execute(LsProgram *ls);
 void ls_destroy(LsProgram **ls);
+void clean_ls_files(LsProgram *program);
+void free_file_arr(FileArr *arr);
 /******************************/
 
 #endif
