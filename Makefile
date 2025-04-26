@@ -1,97 +1,82 @@
-# Project settings
-SOURCE_DIR   := Source
-OBJECT_DIR   := Object
-INCLUDE_DIR  := Header
-EXECUTABLE   := ft_ls
-CC           := cc
+# Configuration
+NAME := ft_ls
+SOURCE_DIR := Source
+OBJECT_DIR := Object
+INCLUDE_DIR := Header
+LIBFT_DIR := Lib/libft/utils/
 
-# Path to libft
-LIBFT_DIR    := Lib/libft
-LIBFT        := $(LIBFT_DIR)/utils/libft.a
+# Compiler and flags
+CC := cc
+CFLAGS_COMMON := -I$(INCLUDE_DIR) -Wall -Wextra -Werror -MMD -MP
+CFLAGS_DEBUG := $(CFLAGS_COMMON) -g -gdwarf-3 -DDEBUG
+CFLAGS_RELEASE := $(CFLAGS_COMMON) -O3 -DNDEBUG
 
-# Build mode: can be “debug” or “release”; default is debug
-BUILD ?= debug
+# Default build type (used when calling 'make' with no target)
+MODE ?= debug
 
-# Compiler flags per build
-CFLAGS_DEBUG   := -I$(INCLUDE_DIR) -I$(LIBFT_DIR) -g -gdwarf-3 -DDEBUG -MMD -MP
-CFLAGS_RELEASE := -I$(INCLUDE_DIR) -I$(LIBFT_DIR) -O2 -Wall -Wextra -Werror -MMD -MP
-
-# Choose flags and object dir based on BUILD
-ifeq ($(BUILD),debug)
-  CFLAGS   := $(CFLAGS_DEBUG)
-  OBJ_DIR  := $(OBJECT_DIR)/debug
-else ifeq ($(BUILD),release)
-  CFLAGS   := $(CFLAGS_RELEASE)
-  OBJ_DIR  := $(OBJECT_DIR)/release
+ifeq ($(MODE),debug)
+    CFLAGS := $(CFLAGS_DEBUG)
+    BUILD_DIR := $(OBJECT_DIR)/debug
+    TARGET := $(NAME)_debug
 else
-  $(error Unknown BUILD mode "$(BUILD)"; use “debug” or “release”)
+    CFLAGS := $(CFLAGS_RELEASE)
+    BUILD_DIR := $(OBJECT_DIR)/release
+    TARGET := $(NAME)
 endif
 
-# Source, objects, and dependency files
+# Source files
 SRCS := $(wildcard $(SOURCE_DIR)/*.c)
-OBJS := $(patsubst $(SOURCE_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
+OBJS := $(patsubst $(SOURCE_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 DEPS := $(OBJS:.o=.d)
 
-# Default target: build executable in the current BUILD mode
-all: $(LIBFT) $(EXECUTABLE)
+# Libft
+LIBFT := $(LIBFT_DIR)/libft.a
 
+# Targets
+.PHONY: all debug release clean fclean re libft
 
-install: $(EXECUTABLE)
-	@mkdir -p $(HOME)/.local/bin
-	@if [ -e $(HOME)/.local/bin/$(EXECUTABLE) ]; then \
-		echo "Removing existing link..."; \
-		rm -f $(HOME)/.local/bin/$(EXECUTABLE); \
-	fi
-	@echo "Exporting the .local/bin to path"
-	@export PATH="$(HOME)/.local/bin:$(PATH)"
-	@echo "Creating symlink in $(HOME)/.local/bin/"
-	@ln -sf $(CURDIR)/$(EXECUTABLE) $(HOME)/.local/bin/$(EXECUTABLE)
-	@echo "Installation complete. Make sure $(HOME)/.local/bin is in your PATH."
-
-# Link step
-$(EXECUTABLE): $(OBJS)
-	@echo "Compiling $(BUILD) version: Linking..."
-	@$(CC) $(CFLAGS) $^ $(LIBFT) -o $@
-	@echo "$(BUILD) version executable created: $@"
-
-# Compile step (creates $(OBJ_DIR) as needed)
-$(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
-	@echo "Compiling $(BUILD) version: $<"
-	@$(CC) $(CFLAGS) -c $< -o $@
-
-# Build libft
-$(LIBFT):
-	@echo "Building libft..."
-	@$(MAKE) -C $(LIBFT_DIR)/utils
-
-# Clean only object files (both modes)
-clean:
-	@echo "Cleaning all object files..."
-	@rm -rf $(OBJECT_DIR)
-	@$(MAKE) -C $(LIBFT_DIR)/utils clean
-
-# Clean objects and executable
-fclean: clean
-	@echo "Cleaning executable..."
-	@rm -f $(EXECUTABLE)
-	@rm -f $(HOME)/.local/bin/$(EXECUTABLE)
-	@$(MAKE) -C $(LIBFT_DIR)/utils fclean
-
-# Rebuild everything
-re: fclean all
-
-# Shortcut targets to switch modes
-.PHONY: all clean fclean re debug release test
+all: $(TARGET)
 
 debug:
-	@$(MAKE) BUILD=debug
+	@$(MAKE) MODE=debug
 
 release:
-	@$(MAKE) BUILD=release
+	@$(MAKE) MODE=release
 
-test:
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -s ./$(EXECUTABLE) 2> valgrind > ft_ls_output
+$(NAME): $(BUILD_DIR) libft $(OBJS)
+	@echo "Linking release version..."
+	@$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $@
+	@echo "Release executable created: $@"
 
-# Include dependency files
+$(NAME)_debug: $(BUILD_DIR) libft $(OBJS)
+	@echo "Linking debug version..."
+	@$(CC) $(CFLAGS) $(OBJS) $(LIBFT) -o $@
+	@echo "Debug executable created: $@"
+
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
+
+$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c
+	@mkdir -p $(BUILD_DIR)
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+libft:
+	@echo "Building libft..."
+	@$(MAKE) -C $(LIBFT_DIR)
+
+clean:
+	@echo "Cleaning up object files..."
+	@rm -rf $(OBJECT_DIR)
+	@$(MAKE) -C $(LIBFT_DIR) clean
+	@echo "Object files cleaned."
+
+fclean: clean
+	@echo "Cleaning up executables..."
+	@rm -f $(NAME) $(NAME)_debug
+	@$(MAKE) -C $(LIBFT_DIR) fclean
+	@echo "Executables cleaned."
+
+re: fclean all
+
 -include $(DEPS)
