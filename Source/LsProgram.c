@@ -99,7 +99,7 @@ void ls_execute(LsProgram *program)
   {
     program->pathindex = index;
     if (program->path[index][0] == '\0')
-      return;
+      continue;
     ls_output(program, program->path[index]);
   }
   if (program->flags_value & FLAG_TIME)
