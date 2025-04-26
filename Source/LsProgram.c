@@ -7,6 +7,8 @@ char  *get_group(gid_t group);
 char *get_size_hardlinks(struct stat data);
 char *get_modification_time(struct stat data);
 
+
+
 uint16_t FilePrintLong(struct stat data)
 {
   char *perm = get_permission(data);
@@ -30,7 +32,7 @@ uint16_t FilePrintLong(struct stat data)
   write(1, "\t", 1);
   char *time = get_modification_time(data);
   write(1, time, ft_strlen(time) - 1);
-  write(1, "\t", 1);
+  write(1, " ", 1);
   return 0;
 }
 
@@ -47,12 +49,10 @@ void print_dir_content(File *file, int long_print)
       else if(child->next){
         print("\t")
       }
-
-      if (!child->next)
-        print("\n");
     }
     else
     {
+
       FilePrintLong(child->data);
       print(child->folderName);
       if(child->next)
@@ -72,6 +72,8 @@ void printoutput(LsProgram *ls, int recursive)
   {
     if (size > 1)
     {
+      if(arr->prev != NULL)
+        print("\n\n");
       print(arr->file->folderName);
       print(":\n");
     }
@@ -111,6 +113,7 @@ void ls_execute(LsProgram *program)
     }
   }
   printoutput(program, program->flags_value & FLAG_RECURSIVE);
+  print("\n");
 }
 
 unsigned int parse_flags(int argc, char *argv[], char ***path)

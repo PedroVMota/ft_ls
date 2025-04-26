@@ -35,6 +35,19 @@ DEPS := $(OBJS:.o=.d)
 # Default target: build executable in the current BUILD mode
 all: $(LIBFT) $(EXECUTABLE)
 
+
+install: $(EXECUTABLE)
+	@mkdir -p $(HOME)/.local/bin
+	@if [ -e $(HOME)/.local/bin/$(EXECUTABLE) ]; then \
+		echo "Removing existing link..."; \
+		rm -f $(HOME)/.local/bin/$(EXECUTABLE); \
+	fi
+	@echo "Exporting the .local/bin to path"
+	@export PATH="$(HOME)/.local/bin:$(PATH)"
+	@echo "Creating symlink in $(HOME)/.local/bin/"
+	@ln -sf $(CURDIR)/$(EXECUTABLE) $(HOME)/.local/bin/$(EXECUTABLE)
+	@echo "Installation complete. Make sure $(HOME)/.local/bin is in your PATH."
+
 # Link step
 $(EXECUTABLE): $(OBJS)
 	@echo "Compiling $(BUILD) version: Linking..."
@@ -62,6 +75,7 @@ clean:
 fclean: clean
 	@echo "Cleaning executable..."
 	@rm -f $(EXECUTABLE)
+	@rm -f $(HOME)/.local/bin/$(EXECUTABLE)
 	@$(MAKE) -C $(LIBFT_DIR)/utils fclean
 
 # Rebuild everything
