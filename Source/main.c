@@ -6,6 +6,9 @@
 
 int main(int argc, char *argv[])
 {
+    #ifdef DEBUG
+    print("======= Be aware this is the development version! ========\n");
+    #endif
     LsProgram *program = ls_init(argc, argv);
     if (program == NULL) {
         print("failed to initialize lsprogram\n");
