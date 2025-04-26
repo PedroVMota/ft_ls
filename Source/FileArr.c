@@ -25,7 +25,7 @@ FileArr *new_file(char *root, int recursive, int include_hidden, int sort_time){
     return node;
 }
 FileArr *add_file(FileArr **arr, FileArr *node){
-    if(!arr || !(*arr))
+    if(!arr || !node)
         return node;
     FileArr *last = last_pos(*arr);
     if(!last){
