@@ -63,7 +63,7 @@ struct File{
 typedef struct File File;
 
 
-File *Load(char *, bool, int);
+File *Load(char *, bool, int, int);
 void sortFilesByMTime(File *head);
 
 void free_file(File *file);

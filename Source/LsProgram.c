@@ -22,15 +22,15 @@ uint16_t FilePrintLong(struct stat data)
   if(!user | !group)
     return FLAG_ERROR_MALLOC;
   write(1, user, ft_strlen(user));
-  write(1, " ", 1);
+  write(1, "\t", 1);
   write(1, group, ft_strlen(group));
-  write(1, " ", 1);
+  write(1, "\t", 1);
   char *size = ft_itoa(data.st_size);
   write(1, size, ft_strlen(size));
-  write(1, " ", 1);
+  write(1, "\t", 1);
   char *time = get_modification_time(data);
   write(1, time, ft_strlen(time) - 1);
-  write(1, " ", 1);
+  write(1, "\t", 1);
   return 0;
 }
 
@@ -42,7 +42,13 @@ void print_dir_content(File *file, int long_print)
     if (!long_print)
     {
       print(child->folderName);
-      if(child->next)
+      if(!isatty(fileno(stdout)) && child->next)
+        print("\n")
+      else if(child->next){
+        print("\t")
+      }
+
+      if (!child->next)
         print("\n");
     }
     else
@@ -76,7 +82,7 @@ void printoutput(LsProgram *ls, int recursive)
 
 flags_t ls_output(LsProgram *program, char *path)
 {
-  program->arr = add_file(&program->arr, new_file(path, program->flags_value & FLAG_RECURSIVE, (program->flags_value & FLAG_ALL)));
+  program->arr = add_file(&program->arr, new_file(path, program->flags_value & FLAG_RECURSIVE, (program->flags_value & FLAG_ALL), (program->flags_value & FLAG_TIME)));
   return 0;
 }
 

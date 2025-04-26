@@ -10,9 +10,9 @@ FileArr *last_pos(FileArr *cur){
     return cur;
 }
 
-FileArr *new_file(char *root, int recursive, int include_hidden){
+FileArr *new_file(char *root, int recursive, int include_hidden, int sort_time){
     
-    File *file = Load(root, recursive, include_hidden);
+    File *file = Load(root, recursive, include_hidden, sort_time);
     if(!file)
         return NULL;
     FileArr *node = malloc(sizeof(FileArr));

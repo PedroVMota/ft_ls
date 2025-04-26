@@ -24,7 +24,7 @@ static inline int use_hiden(int use, struct dirent *entry){
 }
 
 
-static void addchilds(File *folder, File *child) {
+static void addchilds(File *folder, File *child, int sort_by_modification) {
     // reset the new node’s pointers
     child->next = NULL;
     child->prev = NULL;
@@ -46,11 +46,19 @@ static void addchilds(File *folder, File *child) {
     }
 
     // 3) otherwise walk until the next node would sort >= new child
-    while (cur->next
-        && ft_strcmp(cur->next->folderName, child->folderName) < 0)
-    {
-        cur = cur->next;
+    if(!sort_by_modification){
+        while (cur->next && ft_strcmp(cur->next->folderName, child->folderName) < 0)
+        {
+            cur = cur->next;
+        }
     }
+    else {
+        // Sort by modification time (newest first)
+        while (cur->next && cur->next->data.st_mtime > child->data.st_mtime) {
+            cur = cur->next;
+        }
+    }
+    
 
     // 4) splice child in between cur and cur->next
     child->next = cur->next;
@@ -60,7 +68,7 @@ static void addchilds(File *folder, File *child) {
     child->prev = cur;
 }
 
-static void readalldir(File *file, DIR *dir, int usehiddens, char *parentpath, int recursive){
+static void readalldir(File *file, DIR *dir, int usehiddens, char *parentpath, int recursive, int sort_time){
     struct dirent *entry;
     while((entry = readdir(dir))){
         if(use_hiden(usehiddens, entry))
@@ -74,7 +82,7 @@ static void readalldir(File *file, DIR *dir, int usehiddens, char *parentpath, i
             continue;
         File *folderchild = NULL;
         if (recursive && entry->d_type == DT_DIR)
-            folderchild = Load(cpath, recursive, usehiddens);
+            folderchild = Load(cpath, recursive, usehiddens, sort_time);
         else{
             folderchild = ft_calloc(1, sizeof(File));
             if(folderchild){
@@ -87,12 +95,12 @@ static void readalldir(File *file, DIR *dir, int usehiddens, char *parentpath, i
 				folderchild->prev = NULL;
             }
         }
-        addchilds(file, folderchild);
+        addchilds(file, folderchild, sort_time);
         free(cpath);
     }
 }
 
-File *Load(char *root, bool recursive, int include_hiden)
+File *Load(char *root, bool recursive, int include_hiden, int sort_by_time)
 {
 	File *folder = init();
 	if (!folder)
@@ -109,7 +117,7 @@ File *Load(char *root, bool recursive, int include_hiden)
 		return NULL;
 	}
     
-    readalldir(folder, dir, include_hiden, root, recursive);
+    readalldir(folder, dir, include_hiden, root, recursive, sort_by_time);
 	closedir(dir);
 	// Return the created File structure
 	return folder;

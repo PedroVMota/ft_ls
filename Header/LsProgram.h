@@ -38,7 +38,7 @@ struct FileArr{
 typedef struct FileArr FileArr;
 
 /******** FileArr FUNCTIONS ********/
-FileArr *new_file(char *, int, int);
+FileArr *new_file(char *, int, int, int);
 FileArr *add_file(FileArr **, FileArr *);
 FileArr *last_pos(FileArr *);
 size_t lst_size(FileArr *);
