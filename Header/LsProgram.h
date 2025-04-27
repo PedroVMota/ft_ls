@@ -13,7 +13,7 @@
         #define FLAG_REVERSE        0b0000000000001000  // 0x0008 -r int value: 8
         #define FLAG_TIME           0b0000000000010000  // 0x0010 -t int value: 16
 
-        #ifndef BONUS_H
+        #ifdef BONUS_H
             #define FLAG_ACCESS_TIME    0b0000000000100000  // 0x0020 -u int value: 32
             #define FLAG_DO_NOT_SORT    0b0000000001000000  // 0x0040 -f int value: 64
             #define FLAG_OMIT_OWNER     0b0000000010000000  // 0x0080 -g int value: 128
@@ -26,7 +26,7 @@
         #define FLAG_ERROR_LONG_DETAILS -0b0000000000001000 // 0xFFFC -4 int value: -4
     #endif
 
-typedef uint16_t flags_t;
+typedef int16_t flags_t;
 
 
 struct FileArr{

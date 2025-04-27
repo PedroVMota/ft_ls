@@ -25,46 +25,55 @@ static inline int use_hiden(int use, struct dirent *entry){
 
 
 static void addchilds(File *folder, File *child, int sort_by_modification) {
-    // reset the new node’s pointers
+    // Check for NULL pointers
+    if (!folder || !child)
+        return;
+    
     child->next = NULL;
     child->prev = NULL;
-
-    // 1) empty list → child becomes first
-    if (!folder->childs) {
+    
+    // Check if this is the first child
+    if (folder->childs == NULL) {
         folder->childs = child;
         return;
     }
-
+    
     File *cur = folder->childs;
-
-    // 2) insert before head if it sorts earlier
-    if (ft_strcmp(child->folderName, cur->folderName) < 0) {
-        child->next        = cur;
-        cur->prev          = child;
-        folder->childs     = child;
-        return;
-    }
-
-    // 3) otherwise walk until the next node would sort >= new child
-    if(!sort_by_modification){
-        while (cur->next && ft_strcmp(cur->next->folderName, child->folderName) < 0)
-        {
-            cur = cur->next;
+    
+    // Special case: insert at the beginning if it should come first
+    if (!sort_by_modification) {
+        if (ft_strcmp(child->folderName, cur->folderName) < 0) {
+            child->next = cur;
+            cur->prev = child;
+            folder->childs = child;
+            return;
         }
-    }
-    else {
-        // Sort by modification time (newest first)
-        while (cur->next && cur->next->data.st_mtime > child->data.st_mtime) {
-            cur = cur->next;
+    } else {
+        // For time sorting: insert at beginning if newer
+        if (child->data.st_mtime > cur->data.st_mtime) {
+            child->next = cur;
+            cur->prev = child;
+            folder->childs = child;
+            return;
         }
     }
     
-
-    // 4) splice child in between cur and cur->next
+    // Find insertion point
+    if (!sort_by_modification) {
+        // Sort alphabetically
+        while (cur->next && ft_strcmp(cur->next->folderName, child->folderName) < 0)
+            cur = cur->next;
+    } else {
+        // Sort by modification time (newest first)
+        while (cur->next && cur->next->data.st_mtime > child->data.st_mtime)
+            cur = cur->next;
+    }
+    
+    // Insert child after cur
     child->next = cur->next;
     if (cur->next)
         cur->next->prev = child;
-    cur->next  = child;
+    cur->next = child;
     child->prev = cur;
 }
 
@@ -87,12 +96,15 @@ static void readalldir(File *file, DIR *dir, int usehiddens, char *parentpath, i
             folderchild = ft_calloc(1, sizeof(File));
             if(folderchild){
                 folderchild->folderName = ft_strdup(entry->d_name);
-				folderchild->isdir = (entry->d_type == DT_DIR);
-				ft_bzero(&folderchild->data, sizeof(folderchild->data));
-				if (stat(cpath, &folderchild->data) == -1)
-					print(strerror(errno));
-				folderchild->next = NULL;
-				folderchild->prev = NULL;
+		folderchild->isdir = (entry->d_type == DT_DIR);
+		ft_bzero(&folderchild->data, sizeof(folderchild->data));
+		if (stat(cpath, &folderchild->data) == -1)
+		{
+			print(strerror(errno));
+			break;
+		}
+		folderchild->next = NULL;
+		folderchild->prev = NULL;
             }
         }
         addchilds(file, folderchild, sort_time);
@@ -102,6 +114,7 @@ static void readalldir(File *file, DIR *dir, int usehiddens, char *parentpath, i
 
 File *Load(char *root, bool recursive, int include_hiden, int sort_by_time)
 {
+	
 	File *folder = init();
 	if (!folder)
 		return NULL;
@@ -117,7 +130,7 @@ File *Load(char *root, bool recursive, int include_hiden, int sort_by_time)
 		return NULL;
 	}
     
-    readalldir(folder, dir, include_hiden, root, recursive, sort_by_time);
+	readalldir(folder, dir, include_hiden, root, recursive, sort_by_time);
 	closedir(dir);
 	// Return the created File structure
 	return folder;

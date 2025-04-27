@@ -144,7 +144,7 @@ unsigned int parse_flags(int argc, char *argv[], char ***path)
         case 't':
           flags |= FLAG_TIME;
           break;
-#ifdef BONUS_H
+	#ifdef BONUS_H
         case 'u':
           flags |= FLAG_ACCESS_TIME;
           break;
@@ -157,7 +157,7 @@ unsigned int parse_flags(int argc, char *argv[], char ***path)
         case 'd':
           flags |= FLAG_DIRECTORY_NAMES;
           break;
-#endif // BONUS_H
+	#endif // BONUS_H
         default:
           print("Unknown flag: ");
           print(argv[i]);
